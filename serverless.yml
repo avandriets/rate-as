@@ -1,0 +1,46 @@
+service: rate-as
+frameworkVersion: '3'
+
+custom:
+  feedbacksTable: 'feedbacks-table-${sls:stage}'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: eu-central-1
+  stage: dev
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - Fn::GetAtt: [ FeedbacksTable, Arn ]
+  environment:
+    FEEDBACK_TABLE: ${self:custom.feedbacksTable}
+
+functions:
+  api:
+    handler: index.handler
+    events:
+      - httpApi: '*'
+
+resources:
+  Resources:
+    FeedbacksTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: feedbackId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: feedbackId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.feedbacksTable}

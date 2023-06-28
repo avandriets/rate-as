@@ -1,3 +1,9 @@
+# IDE
+.idea
+
+# Serverless
+.serverless
+
 # Logs
 logs
 *.log
